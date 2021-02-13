@@ -10,6 +10,29 @@ function update() {
 	ctx.fillStyle = "green";
 	ctx.fillRect(0, canvas.height - canvas.height/10, canvas.width, canvas.height);
 
+//aliens
+	aliens.forEach(drawAlien);
+
+	//move the aliens
+
+	for (var i=0; i<aliens.length; i++) {
+		let alien = aliens[i];
+
+		if (alien.flankLeft && alien.x <= shipSize) {
+			aliens.forEach(alienAdvance);
+			continue;
+		} else if (alien.flankRight && alien.x >= canvas.width-shipSize) {
+			aliens.forEach(alienAdvance);
+			continue;
+		}
+
+		if (alien.moveLeft) {
+			alien.x -= alienSpeed / FPS;
+		} else if (alien.moveRight) {
+			alien.x += alienSpeed / FPS;
+		}
+	}
+
 // ship
 	drawShip();
 
@@ -29,7 +52,11 @@ function update() {
 			continue;
 		} 
 
-	drawLaser(i); 
-	ship.lasers[i].y += ship.lasers[i].yv;
+		drawLaser(i); 
+		ship.lasers[i].y += ship.lasers[i].yv;
 	}
+
+
+
+
 }
