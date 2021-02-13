@@ -11,26 +11,35 @@ function update() {
 	ctx.fillRect(0, canvas.height - canvas.height/10, canvas.width, canvas.height);
 
 //aliens
+	//move aliens
 	aliens.forEach(drawAlien);
 
-	//move the aliens
+	var advance = false;
+
+	for (var rowIndex=0; rowIndex<grid.length; rowIndex++) {
+		var row = grid[rowIndex];
+
+		var leftAlien = row[0];
+		var rightAlien = row[row.length-1];
+
+		if (leftAlien.x <= shipSize && direction.x == -1) {
+			advance = true;
+			direction.x = 1;
+		} else if (rightAlien.x >= canvas.width-shipSize  && direction.x == 1) {
+			advance = true;
+			direction.x = -1;
+		}
+	}
+
+	if (advance) {
+		aliens.forEach(alienAdvance);
+	}
 
 	for (var i=0; i<aliens.length; i++) {
 		let alien = aliens[i];
 
-		if (alien.flankLeft && alien.x <= shipSize) {
-			aliens.forEach(alienAdvance);
-			continue;
-		} else if (alien.flankRight && alien.x >= canvas.width-shipSize) {
-			aliens.forEach(alienAdvance);
-			continue;
-		}
-
-		if (alien.moveLeft) {
-			alien.x -= alienSpeed / FPS;
-		} else if (alien.moveRight) {
-			alien.x += alienSpeed / FPS;
-		}
+		alien.x += alienSpeed / FPS * direction.x;
+		alien.y += alienSpeed / FPS * direction.y;		
 	}
 
 // ship

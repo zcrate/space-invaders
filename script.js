@@ -7,7 +7,7 @@ const laserSpeed = 400; // speed of lasers in px/sec
 const laserMax = 3; // max number of lasers on screen
 
 const alienSize = 25; // min size of alien in pixels;
-const alienSpeed = 200; // alien speed in px/sec
+const alienSpeed = 25; // alien speed in px/sec
 const alienColors = ['purple', 'blue', 'yellow'];
 
 var canvas = document.querySelector('#gameCanvas');
@@ -60,17 +60,25 @@ setInterval(update, 1000 / FPS);
 
 // set up aliens
 var aliens = [];
+var grid = [];
+
+var direction = {
+	x: 1,
+	y: 0
+};
+
+var numCols = 11;
+
+var numRows = 5;
 
 class Alien {
-	constructor (type, xIndex, yIndex, flank) {
+	constructor (type, xIndex, yIndex) {
 		this.type = type;
 		this.color = alienColors[type];
 		this.x = alienSize + xIndex*45;
 		this.y = alienSize + yIndex*40;
 		this.r = (alienSize/2) + (type*2);
-		this.moveLeft = false;
-		this.moveRight = true;
-	}	
+	}
 }
 
 function drawAlien(item) {
@@ -86,37 +94,30 @@ function drawAlien(item) {
 
 function newAlienFleet() {
 	aliens = [];
+	grid = [];
 
-	for (var i=4; i>=0; i--) {
+	for (var i=0; i<numRows; i++) {
+		grid[i] = [];
 
-		for (var j=0; j<11; j++) {
-			if (j==0) {
-				aliens.flankLeft == true;
-			} else if (j==10) {
-				aliens.flankRight == true;
-			}
+		for (var j=0; j<numCols; j++) {
+			var alien;
 
 			if (i==0) {
-				aliens.push(new Alien(0, j, i));
+				alien = new Alien(0, j, i);
 			} else if (i==1 || i==2) {
-				aliens.push(new Alien(1, j, i));
+				alien = new Alien(1, j, i);
 			} else {
-				aliens.push(new Alien(2, j, i));
+				alien = new Alien(2, j, i);
 			}
+
+			aliens.push(alien)
+			grid[i].push(alien)
 		}
-	}	
+	}
 }
 
 function alienAdvance(alien) {
-	if (alien.moveLeft) {
-		alien.moveLeft = false;
-		alien.y =+ 40;
-		alien.moveRight = true;
-	} else if (alien.moveRight) {
-		alien.moveRight = false;
-		alien.y =+ 40;
-		alien.moveLeft = true;
-	}
+	alien.y += 40;
 }
 
 
