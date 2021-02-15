@@ -3,16 +3,20 @@ const FPS = 30; // frames per second
 const shipSize = 40; // ship's size in pixels
 const shipSpeed = 350; // ship's speed in px/sec
 
-const laserSpeed = 400; // speed of lasers in px/sec
-const laserMax = 3; // max number of lasers on screen
+const laserSpeed = 350; // speed of lasers in px/sec
+const laserColors = {
+	ship: "lightgreen",
+	alien: "lightblue"
+};
 
 const alienSize = 25; // min size of alien in pixels;
-const alienSpeed = 25; // alien speed in px/sec
+const alienSpeed = 15; // alien speed in px/sec
 const alienColors = ['purple', 'blue', 'yellow'];
+
+
 
 var canvas = document.querySelector('#gameCanvas');
 var ctx = canvas.getContext('2d');
-
 
 // set up event handlers
 document.addEventListener("keydown", keyDown);
@@ -22,7 +26,7 @@ document.addEventListener("keyup", keyUp);
 function keyDown(e) {
     switch(e.keyCode) {
     	case 32: // spacebar (shoot laser)
-    		shootLaser();
+    		shootLaser(ship, ship.lasers);
     		break;
         case 37: // left arrow (move left)
         	ship.moveLeft = true;
@@ -56,10 +60,17 @@ function keyUp(e) {
 }
 
 // set up the game loop
+
+
 setInterval(update, 1000 / FPS);
+
+function distBetweenPoints(x1, y1, x2, y2) {
+	return Math.sqrt(Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2));
+}
 
 // set up aliens
 var aliens = [];
+var alienLasers = [];
 var grid = [];
 
 var direction = {
@@ -68,7 +79,6 @@ var direction = {
 };
 
 var numCols = 11;
-
 var numRows = 5;
 
 class Alien {
@@ -78,9 +88,15 @@ class Alien {
 		this.x = alienSize + xIndex*45;
 		this.y = alienSize + yIndex*40;
 		this.r = (alienSize/2) + (type*2);
+
+		this.currentY == this.y;
+
+		this.laserMax = 1;
+		this.canShoot = false;
 	}
 }
 
+//draw the aliens
 function drawAlien(item) {
 	ctx.strokeStyle = "black";
 	ctx.fillStyle = item.color;
@@ -90,6 +106,23 @@ function drawAlien(item) {
 	ctx.arc(item.x, item.y, item.r, 0, Math.PI*2, false);
 	ctx.stroke();
 	ctx.fill();
+}
+
+// draw the ship
+function drawShip(x, y) {
+	ctx.strokeStyle = "black";
+	ctx.fillStyle = "limegreen";
+	ctx.lineWidth = 2;
+	ctx.beginPath();
+	ctx.arc(ship.x, ship.y, ship.r, 0, Math.PI, true);
+	ctx.stroke(); 
+	ctx.fill();
+}
+
+//draw the lasers
+function drawLaser(shooter, laserArray, index) {
+	ctx.fillStyle = laserColors.shooter;
+	ctx.fillRect(laserArray[index].x-2, laserArray[index].y-shipSize, 4, ship.r);
 }
 
 function newAlienFleet() {
@@ -116,28 +149,6 @@ function newAlienFleet() {
 	}
 }
 
-function alienAdvance(alien) {
-	alien.y += 40;
-}
-
-
-// draw the ship
-function drawShip(x, y) {
-	ctx.strokeStyle = "black";
-	ctx.fillStyle = "limegreen";
-	ctx.lineWidth = 2;
-	ctx.beginPath();
-	ctx.arc(ship.x, ship.y, ship.r, 0, Math.PI, true);
-	ctx.stroke();
-	ctx.fill();
-}
-
-//draw the lasers
-function drawLaser(index) {
-	ctx.fillStyle = "lightblue";
-	ctx.fillRect(ship.lasers[index].x-2, ship.lasers[index].y-shipSize, 4, ship.r);
-}
-
 function newShip() {
 	return {
 		x: canvas.width/2,
@@ -148,20 +159,40 @@ function newShip() {
 		moveRight: false,
 
 		lasers: [],
+		laserMax: 3,
 		canShoot: true
 	}
 }
 
-function shootLaser() {
-	if (ship.canShoot && ship.lasers.length < laserMax) {
-		ship.lasers.push({
-			x: ship.x,
-			y: ship.y,
-			yv: -laserSpeed / FPS,
-		})
-	}
-	ship.canShoot = false; 
+
+function alienAdvance(alien) {
+	alien.currentY = alien.y
 }
+
+function alienShooting() {
+	var shooter = Math.floor(Math.random() * aliens.length-1);
+
+	for (var i=0; i<aliens.length; i++) {
+		let alien = aliens[i];
+
+		if (i == shooter) {
+			alien.canShoot = true;
+			shootLaser(alien, alienLasers);
+		}
+	}
+}
+
+function shootLaser(shooter, laserArray) {
+	if (shooter.canShoot && laserArray.length < shooter.laserMax) {
+		laserArray.push({
+			x: shooter.x,
+			y: shooter.y,
+			yv: laserSpeed / FPS,
+		}) 
+	}
+	shooter.canShoot = false;
+} 
+
 
 function newGame() {
 	ship = newShip();
